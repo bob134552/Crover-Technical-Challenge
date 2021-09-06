@@ -18,6 +18,10 @@ def home(request):
     '''
     if request.method == "POST":
         csv_file = request.FILES['file']
+        # Checks if data of the same name already exists
+        if TempData.objects.filter(set=csv_file.name.split('.csv')[0]).exists():
+            messages.error(request, 'This data set already exists.')
+            return redirect('home')
         if not csv_file.name.endswith('.csv'):
             messages.error(request, 'THIS IS NOT A CSV FILE')
         paramFile = io.TextIOWrapper(request.FILES['file'].file)
@@ -52,8 +56,8 @@ def home(request):
             'graph': None,
         }
         return render(request, 'home/index.html', context)
-
-    sets = OrderedSet([item.set for item in data])
+    my_list = list(item.set for item in data.order_by('set'))
+    sets = OrderedSet(my_list)
     current_set = sets[0]
 
     # Changes graph to reflect a change in selected data set.
