@@ -14,6 +14,34 @@ from ordered_set import OrderedSet
 
 def home(request):
     '''
+    Handles a post request to bulk add a new data set from a csv file.
+    '''
+    if request.method == "POST":
+        csv_file = request.FILES['file']
+        if not csv_file.name.endswith('.csv'):
+            messages.error(request, 'THIS IS NOT A CSV FILE')
+        paramFile = io.TextIOWrapper(request.FILES['file'].file)
+        portfolio1 = csv.DictReader(paramFile)
+        list_of_dict = list(portfolio1)
+
+        objs = [
+            TempData(
+                set=csv_file.name.split('.csv')[0],
+                x_point=row['x'],
+                y_point=row['y'],
+                temperature=row['temperature'],
+            )
+            for row in list_of_dict
+        ]
+
+        try:
+            TempData.objects.bulk_create(objs)
+            messages.success(request, "Import complete")
+            return redirect('home')
+        except Exception as e:
+            messages.error(request, f"Failed To import, Error: {e}")
+            return redirect('home')
+    '''
     Displays the home page and displays a graph of a dataset.
     '''
     data = TempData.objects.all()
@@ -86,34 +114,6 @@ def home(request):
         'graph': graph,
     }
 
-    if request.method == "POST":
-        '''
-        Handles a post request to bulk add a new data set from a csv file.
-        '''
-        csv_file = request.FILES['file']
-        if not csv_file.name.endswith('.csv'):
-            messages.error(request, 'THIS IS NOT A CSV FILE')
-        paramFile = io.TextIOWrapper(request.FILES['file'].file)
-        portfolio1 = csv.DictReader(paramFile)
-        list_of_dict = list(portfolio1)
-
-        objs = [
-            TempData(
-                set=csv_file.name.split('.csv')[0],
-                x_point=row['x'],
-                y_point=row['y'],
-                temperature=row['temperature'],
-            )
-            for row in list_of_dict
-        ]
-
-        try:
-            TempData.objects.bulk_create(objs)
-            messages.success(request, "Import complete")
-            return redirect('home')
-        except Exception as e:
-            messages.error(request, f"Failed To import, Error: {e}")
-            return redirect('home')
     return render(request, 'home/index.html', context)
 
 

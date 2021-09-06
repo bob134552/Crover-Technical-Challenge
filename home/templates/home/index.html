@@ -6,15 +6,15 @@
             <form method="POST" enctype="multipart/form-data">
                 {% csrf_token %}
                 <div class="input-group">
-                    <input type="file" class="form-control" id="file" name="file" aria-describedby="inputFileHelp" aria-label="Upload">
+                    <input type="file" class="form-control" id="file" name="file" aria-describedby="inputFileHelp" aria-label="Upload" required>
                     <button class="btn btn-outline-secondary" type="submit" id="uploadButton">Upload</button>
                 </div>
                 <div id="inputFileHelp" class="form-text text-start mt-1">Only accepts CSV files</div>
             </form>
         </div>
         <div class="col-auto mt-1">
-                <p class="d-inline">Current Set: </p>
                 {% if sets is not None %}
+                    <p class="d-inline">Current Set: </p>
                     <select id="set-selector" class="border">
                         {% for set in sets %}
                             <option value="{{set}}" {% if set == selected_set %} selected {% endif %}>{{set}}</option>
