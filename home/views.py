@@ -17,6 +17,14 @@ def home(request):
     Displays the home page and displays a graph of a dataset.
     '''
     data = TempData.objects.all()
+    if not data:
+        context = {
+            'sets': None,
+            'selected_set': None,
+            'graph': None,
+        }
+        return render(request, 'home/index.html', context)
+
     sets = OrderedSet([item.set for item in data])
     current_set = sets[0]
 

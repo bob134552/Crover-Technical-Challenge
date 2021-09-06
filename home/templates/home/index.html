@@ -14,39 +14,45 @@
         </div>
         <div class="col-auto mt-1">
                 <p class="d-inline">Current Set: </p>
-                <select id="set-selector" class="border">
-                    {% for set in sets %}
-                        <option value="{{set}}" {% if set == selected_set %} selected {% endif %}>{{set}}</option>
-                    {% endfor %}
-                </select>
+                {% if sets is not None %}
+                    <select id="set-selector" class="border">
+                        {% for set in sets %}
+                            <option value="{{set}}" {% if set == selected_set %} selected {% endif %}>{{set}}</option>
+                        {% endfor %}
+                    </select>
+                {% endif %}
         </div>
         <div class="col-auto">
-            <a href="#" data-bs-toggle="modal" data-bs-target="#delete_{{ selected_set }}" class="btn btn-danger">Delete This Set</a>
-            <div class="modal fade" id="delete_{{ selected_set }}" tabindex="-1" aria-labelledby="delete_{{ selected_set }}" aria-hidden="true">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h6>Current Set: {{ selected_set }}</h6>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <p>Are you sure you wish to delete this set?</p>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-black rounded-0" data-bs-dismiss="modal">Close</button>
-                            <a href="{% url 'delete_data_set' selected_set %}" type="button" class="btn btn-danger rounded-0">Delete</a>
+            {% if selected_set is not None %}
+                <a href="#" data-bs-toggle="modal" data-bs-target="#delete_{{ selected_set }}" class="btn btn-danger">Delete This Set</a>
+                <div class="modal fade" id="delete_{{ selected_set }}" tabindex="-1" aria-labelledby="delete_{{ selected_set }}" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h6>Current Set: {{ selected_set }}</h6>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p>Are you sure you wish to delete this set?</p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-black rounded-0" data-bs-dismiss="modal">Close</button>
+                                <a href="{% url 'delete_data_set' selected_set %}" type="button" class="btn btn-danger rounded-0">Delete</a>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            {% endif %}
         </div>
     </div>
 
     <div class="row">
         <div class="col-12">
-            {% autoescape off %}
-            {{ graph }}
-            {% endautoescape %}
+            {% if graph is not None %}
+                {% autoescape off %}
+                {{ graph }}
+                {% endautoescape %}
+            {% endif %}
         </div>
     </div>
 </div>
