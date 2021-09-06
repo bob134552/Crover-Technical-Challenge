@@ -1,8 +1,8 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="container-fluid">
+<div class="container">
     <div class="row mt-5">
-        <div class="col-4 offset-4 text-center">
+        <div class="col-4 offset-2 text-center">
             <form method="POST" enctype="multipart/form-data">
                 {% csrf_token %}
                 <div class="input-group">
@@ -12,12 +12,33 @@
                 <div id="inputFileHelp" class="form-text text-start mt-1">Only accepts CSV files</div>
             </form>
         </div>
-        <div class="col-4 mt-1">
+        <div class="col-auto mt-1">
+                <p class="d-inline">Current Set: </p>
                 <select id="set-selector" class="border">
                     {% for set in sets %}
                         <option value="{{set}}" {% if set == selected_set %} selected {% endif %}>{{set}}</option>
                     {% endfor %}
                 </select>
+        </div>
+        <div class="col-auto">
+            <a href="#" data-bs-toggle="modal" data-bs-target="#delete_{{ selected_set }}" class="btn btn-danger">Delete This Set</a>
+            <div class="modal fade" id="delete_{{ selected_set }}" tabindex="-1" aria-labelledby="delete_{{ selected_set }}" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h6>Current Set: {{ selected_set }}</h6>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>Are you sure you wish to delete this set?</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-black rounded-0" data-bs-dismiss="modal">Close</button>
+                            <a href="{% url 'delete_data_set' selected_set %}" type="button" class="btn btn-danger rounded-0">Delete</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -33,6 +54,7 @@
 {% endblock %}
 
 {% block postloadjs %}
+    {{ block.super }}
     <script type="text/javascript">
         $('#set-selector').change(function() {
             var selector = $(this);

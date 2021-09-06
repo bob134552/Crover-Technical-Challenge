@@ -1,18 +1,26 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from .models import TempData
+
 from plotly.offline import plot
 import plotly.graph_objs as go
-import io, csv
+import io
+import csv
 import pandas as pd
 import plotly.express as px
+
 from ordered_set import OrderedSet
 
 
 def home(request):
+    '''
+    Displays the home page and displays a graph of a dataset.
+    '''
     data = TempData.objects.all()
     sets = OrderedSet([item.set for item in data])
     current_set = sets[0]
+
+    # Changes graph to reflect a change in selected data set.
     if 'new_set' in request.GET:
         new_set = request.GET['new_set']
         current_set = new_set
@@ -26,30 +34,30 @@ def home(request):
         y_data.append(x.y_point)
         temperatures.append(x.temperature)
     bottom_axis = list(range(0, len(temperatures)))
-    
 
+    # Sets DataFrame parameters.
     df = pd.DataFrame({'temperatures': temperatures,
-                        'bottom_axis': bottom_axis,
-                        'x_data': x_data,
-                        'y_data': y_data})
-
+                       'bottom_axis': bottom_axis,
+                       'x_data': x_data,
+                       'y_data': y_data})
 
     scatter = px.scatter(df, x='bottom_axis', y='temperatures',
                          hover_data={"temperatures": True,
                                      "x_data": True, "y_data": True,
                                      "bottom_axis": True
-                                    },
+                                     },
                          labels={
                              'bottom_axis': 'Data Point',
                              'temperatures': "Temperature(°C)",
                              'x_data': "Position X(m)",
                              'y_data': "Position Y(m)"
                          })
+
     config = dict({'scrollZoom': True})
     layout = {
-        "title":{
+        "title": {
             'text': f"Silo Temperature: {current_set}",
-            'x':0.5,
+            'x': 0.5,
             'xanchor': 'center',
             'yanchor': 'top'
         },
@@ -58,7 +66,8 @@ def home(request):
         'height': 800,
     }
     scatter.update_layout(layout)
-    scatter.update_traces(mode="markers+lines",marker=dict(color='#5D69B1', size=8), line=dict(color='#52BCA3', width=1))
+    scatter.update_traces(mode="markers+lines", marker=dict(color='#5D69B1',
+                          size=8), line=dict(color='#52BCA3', width=1))
 
     fig = go.Figure(data=scatter, layout=layout)
     graph = plot(fig, output_type='div', include_plotlyjs=False, config=config)
@@ -67,15 +76,19 @@ def home(request):
         'sets': sets,
         'selected_set': current_set,
         'graph': graph,
-        }
+    }
+
     if request.method == "POST":
-        # declaring template
+        '''
+        Handles a post request to bulk add a new data set from a csv file.
+        '''
         csv_file = request.FILES['file']
         if not csv_file.name.endswith('.csv'):
             messages.error(request, 'THIS IS NOT A CSV FILE')
         paramFile = io.TextIOWrapper(request.FILES['file'].file)
         portfolio1 = csv.DictReader(paramFile)
         list_of_dict = list(portfolio1)
+
         objs = [
             TempData(
                 set=csv_file.name.split('.csv')[0],
@@ -94,3 +107,10 @@ def home(request):
             messages.error(request, f"Failed To import, Error: {e}")
             return redirect('home')
     return render(request, 'home/index.html', context)
+
+
+def delete_data_set(request, data_set):
+    '''Deletes A Selected Data Set'''
+    TempData.objects.all().filter(set=data_set).delete()
+    messages.success(request, f'Successfully Deleted: {data_set}')
+    return redirect(home)
