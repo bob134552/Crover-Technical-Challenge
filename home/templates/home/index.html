@@ -3,16 +3,49 @@
 <div class="container-fluid">
     <div class="row mt-5">
         <div class="col-4 offset-4 text-center">
-            <form action="" method="POST" enctype="multipart/form-data">
+            <form method="POST" enctype="multipart/form-data">
                 {% csrf_token %}
                 <div class="input-group">
                     <input type="file" class="form-control" id="file" name="file" aria-describedby="inputFileHelp" aria-label="Upload">
-                    <button class="btn btn-outline-secondary" type="submit" id="inputGroupFileAddon04">Upload</button>
+                    <button class="btn btn-outline-secondary" type="submit" id="uploadButton">Upload</button>
                 </div>
                 <div id="inputFileHelp" class="form-text text-start mt-1">Only accepts CSV files</div>
             </form>
         </div>
+        <div class="col-4 mt-1">
+                <select id="set-selector" class="border">
+                    {% for set in sets %}
+                        <option value="{{set}}" {% if set == selected_set %} selected {% endif %}>{{set}}</option>
+                    {% endfor %}
+                </select>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            {% autoescape off %}
+            {{ graph }}
+            {% endautoescape %}
+        </div>
     </div>
 </div>
 
+{% endblock %}
+
+{% block postloadjs %}
+    <script type="text/javascript">
+        $('#set-selector').change(function() {
+            var selector = $(this);
+            var currentUrl = new URL(window.location);
+            var selectedVal = selector.val();
+            if(selectedVal != "data_0") {
+                var new_set = selectedVal;
+                currentUrl.searchParams.set("new_set", new_set);
+                window.location.replace(currentUrl);
+            } else {
+                currentUrl.searchParams.delete("new_set");
+                window.location.replace(currentUrl);
+            }
+        })
+    </script>
 {% endblock %}
